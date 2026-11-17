@@ -1,0 +1,33 @@
+# One local Task 3 rollout with the final L40 binary ACT checkpoint.
+env:
+  inference_env: sim
+  platform_type: "5w"
+  5w_wholebody: false
+  5w_base_move: true
+  which_arm: right
+  eef_type: sg100
+  ros_rate: 10
+  direct_to_wbc: false
+  sg100_dof_needed: 11
+  sg100_dof_offset: 0
+  sg100_joint_action_unit: rad
+  sg100_state_unit: rad
+  head_init: [0.0, 0.209]
+  limits:
+    gripper:
+      min: [-5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0]
+      max: [5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0]
+  image_size: [640, 480]
+  camera_encoding: jpeg
+  arm_state_keys: [joint_q, gripper]
+  is_binary_sg100_action: false
+inference:
+  policy_type: act
+  pretrained_path: checkpoints/task3_binary_357600/pretrained_model
+  eval_episodes: 1
+  task3_binary: true
+  task3_poses_path: task3_binary/poses_scaled157.json
+  async_inference: false
+  rtc_lite_enabled: false
+  rtc_full_enabled: false
+  max_episode_steps: 650

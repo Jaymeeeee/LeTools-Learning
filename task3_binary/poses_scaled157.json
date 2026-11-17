@@ -1,0 +1,85 @@
+{
+  "description": "Task3 right-hand gesture table. Training and deployment must use this file unchanged.",
+  "dataset_path": "sim/task3_loop_feed",
+  "dataset_commit": "490bba0",
+  "dataset_frames": 185016,
+  "dataset_episodes": 500,
+  "fps": 10,
+  "unit": "rad",
+  "command": "joint position target",
+  "joint_names": [
+    "right_sg100_1",
+    "right_sg100_2",
+    "right_sg100_3",
+    "right_sg100_4",
+    "right_sg100_5",
+    "right_sg100_6",
+    "right_sg100_7",
+    "right_sg100_8",
+    "right_sg100_9",
+    "right_sg100_10",
+    "right_sg100_11"
+  ],
+  "action_index": {
+    "arm": [
+      0,
+      7
+    ],
+    "hand": [
+      7,
+      18
+    ],
+    "base": [
+      18,
+      21
+    ]
+  },
+  "signal_joint": "right_sg100_5",
+  "signal_action_index": 11,
+  "gestures": {
+    "0": {
+      "name": "extended_release",
+      "meaning": "\u5f20\u5f00\u3002\u7a7a\u624b\u63a5\u8fd1\u73af\uff0c\u6216\u628a\u73af\u653e\u4e0b\u4e4b\u540e\u7684\u4f38\u76f4\u624b\u3002\u624b\u6307\u4f38\u76f4\uff0c\u624b\u91cc\u6ca1\u6709\u73af\u3002",
+      "pose_rad": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.6999999785423279,
+        0.0,
+        1.749999955892563,
+        0.0,
+        2.9999999511241913,
+        1.9500000524520875,
+        0.0
+      ]
+    },
+    "1": {
+      "name": "grasp",
+      "meaning": "\u6293\u6301\u3002\u624b\u6307\u5957\u8fdb\u84dd\u8272\u73af\u5e76\u6293\u4f4f\u3002\u542b\u6bcf\u6761\u793a\u8303\u5f00\u5934\u90a3\u4e00\u6b21\u7565\u5f20\u5f00\u7684\u6293\u53d6\uff0c\u90e8\u7f72\u65f6\u4ecd\u53d1\u8fd9\u4e00\u7ec4\u4e2d\u4f4d\u6570\u59ff\u6001\u3002",
+      "pose_rad": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.399000032544136,
+        0.0,
+        1.4704999458789827,
+        0.0,
+        2.9999999511241913,
+        1.8645000219345094,
+        0.0
+      ]
+    }
+  },
+  "label_rule": {
+    "source": "action",
+    "drop_leading_frames_while_signal_below": 0.8,
+    "threshold_rad": 1.027070015668869,
+    "below_threshold": 1,
+    "at_or_above_threshold": 0,
+    "fit_episodes": "split_train.txt",
+    "validation_not_used_for_fit": true
+  },
+  "deployment_hand_scale": 1.57
+}

@@ -213,7 +213,8 @@ class ObsBuffer:
         if len(joint) != 22:
             log_robot.warning(f"Discarding SG100 state with {len(joint)} positions; expected 22")
             return
-        joint = [float(value) / 1.57 for value in joint]
+        state_unit = handle.get("params", {}).get("state_unit", "normalized_1_57")
+        joint = [float(value) if state_unit == "rad" else float(value) / 1.57 for value in joint]
         slices = handle.get("params", {}).get("slice") or []
         joint = [value for start, end in slices for value in joint[start:end]]
         self._append_data(key, joint, msg.header.stamp.to_sec())

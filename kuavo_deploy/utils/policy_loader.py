@@ -175,6 +175,8 @@ def _construct_empty_pi(policy_cls: type, policy_cfg: PreTrainedConfig) -> Any:
 
 def _prepare_policy_config_for_inference(policy_cfg: PreTrainedConfig) -> None:
     """Disable training-only PI0/PI05 features before model construction."""
+    if getattr(policy_cfg, "type", None) == "act":
+        policy_cfg.pretrained_backbone_weights = None
     if getattr(policy_cfg, "type", None) not in {"pi0", "pi05"}:
         return
 
@@ -445,7 +447,8 @@ def load_native_policy_bundle(
         f"[策略加载 5/5] 构建预处理器与后处理器完成: (+{time.perf_counter() - wall:.1f}s) · "
         "load_native_policy_bundle 完成"
     )
-    return policy, preprocessor, postprocessor, pretrained_model_dir
+    from kuavo_deploy.utils.inference_overrides import apply
+    return apply(policy, preprocessor, postprocessor, pretrained_model_dir)
 
 
 def inject_task_prompt(

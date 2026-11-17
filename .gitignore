@@ -231,3 +231,6 @@ kuavo_server/README.md
 
 # CarlOS project artifacts
 .carlos/
+
+# Local Task3 deployment selection
+/deployment_tuning.json

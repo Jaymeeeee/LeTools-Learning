@@ -1,0 +1,84 @@
+{
+  "description": "Task3 right-hand gesture table. Training and deployment must use this file unchanged.",
+  "dataset_path": "sim/task3_loop_feed",
+  "dataset_commit": "490bba0",
+  "dataset_frames": 185016,
+  "dataset_episodes": 500,
+  "fps": 10,
+  "unit": "rad",
+  "command": "joint position target",
+  "joint_names": [
+    "right_sg100_1",
+    "right_sg100_2",
+    "right_sg100_3",
+    "right_sg100_4",
+    "right_sg100_5",
+    "right_sg100_6",
+    "right_sg100_7",
+    "right_sg100_8",
+    "right_sg100_9",
+    "right_sg100_10",
+    "right_sg100_11"
+  ],
+  "action_index": {
+    "arm": [
+      0,
+      7
+    ],
+    "hand": [
+      7,
+      18
+    ],
+    "base": [
+      18,
+      21
+    ]
+  },
+  "signal_joint": "right_sg100_5",
+  "signal_action_index": 11,
+  "gestures": {
+    "0": {
+      "name": "extended_release",
+      "meaning": "张开。空手接近环，或把环放下之后的伸直手。手指伸直，手里没有环。",
+      "pose_rad": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0828025341033936,
+        0.0,
+        1.1146496534347534,
+        0.0,
+        1.9108279943466187,
+        1.2420382499694824,
+        0.0
+      ]
+    },
+    "1": {
+      "name": "grasp",
+      "meaning": "抓持。手指套进蓝色环并抓住。含每条示范开头那一次略张开的抓取，部署时仍发这一组中位数姿态。",
+      "pose_rad": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.8910828232765198,
+        0.0,
+        0.9366241693496704,
+        0.0,
+        1.9108279943466187,
+        1.18757963180542,
+        0.0
+      ]
+    }
+  },
+  "label_rule": {
+    "source": "action",
+    "drop_leading_frames_while_signal_below": 0.8,
+    "threshold_rad": 1.027070015668869,
+    "below_threshold": 1,
+    "at_or_above_threshold": 0,
+    "fit_episodes": "split_train.txt",
+    "validation_not_used_for_fit": true
+  }
+}

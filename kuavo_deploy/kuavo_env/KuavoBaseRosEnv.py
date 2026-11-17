@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import rospy
 import numpy as np
-from cv_bridge import CvBridge
 from sensor_msgs.msg import CompressedImage, JointState
 from geometry_msgs.msg import Twist
 import cv2
@@ -39,7 +38,6 @@ class KuavoBaseRosEnv(gym.Env):
         self.control_signal_manager = ControlSignalManager()
         
         # 初始化其他组件
-        self.bridge = CvBridge()
         self._set_observation_space()
         self._set_action_space()
         self._init_kuavo_sdk()
@@ -104,6 +102,7 @@ class KuavoBaseRosEnv(gym.Env):
         self.sg100_force_velocities = np.asarray(config_kuavo_env.sg100_force_velocities, dtype=np.float64)
         self.is_binary_sg100_action = config_kuavo_env.is_binary_sg100_action
         self.sg100_action_threshold = config_kuavo_env.sg100_action_threshold
+        self.sg100_joint_action_unit = getattr(config_kuavo_env, "sg100_joint_action_unit", "normalized_1_57")
         self.control_rate_hz = getattr(config_kuavo_env, "control_rate", 100)
         self.enable_action_interpolation = getattr(config_kuavo_env, "enable_action_interpolation", True)
         self.interpolation_steps = (
@@ -671,7 +670,7 @@ class KuavoBaseRosEnv(gym.Env):
                     # 1.57. Some SG100 joints legitimately use negative values
                     # (for example right thumb_j2), so do not apply the scalar
                     # open/close clipping here.
-                    positions = values * 1.57
+                    positions = values if self.sg100_joint_action_unit == "rad" else values * 1.57
                     modes = [SG100HandCommand.MODE_JOINT_POSITION] * 11
                 else:
                     raise ValueError(f"SG100 action must have 1 or 11 values per hand, got {values.size}")

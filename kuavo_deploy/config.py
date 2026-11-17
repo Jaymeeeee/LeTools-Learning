@@ -98,6 +98,8 @@ class ConfigEnv:
     sg100_force_velocities: List[float] = field(default_factory=lambda: [0.0] * 22)
     is_binary_sg100_action: bool = False
     sg100_action_threshold: float = 0.5
+    sg100_joint_action_unit: str = "normalized_1_57"
+    sg100_state_unit: str = "normalized_1_57"
 
     limits: LimitsConfig = field(default_factory=LimitsConfig)
     is_binary: bool = False
@@ -159,6 +161,10 @@ class ConfigEnv:
             raise ValueError("sg100_force_threshold must be in [0, 1]")
         if not 0.0 <= self.sg100_action_threshold <= 1.0:
             raise ValueError("sg100_action_threshold must be in [0, 1]")
+        if self.sg100_joint_action_unit not in ("normalized_1_57", "rad"):
+            raise ValueError("sg100_joint_action_unit must be normalized_1_57 or rad")
+        if self.sg100_state_unit not in ("normalized_1_57", "rad"):
+            raise ValueError("sg100_state_unit must be normalized_1_57 or rad")
 
     # -------- Derived properties ----------
     @property
@@ -248,6 +254,8 @@ class ConfigEnv:
                 base["handle"]["params"]["slice"] = self.joint_q_slice
             if key in ["rq2f85", "qiangnao", "leju_claw", "sg100"]:
                 base["handle"]["params"]["slice"] = self.gripper_slice
+                if key == "sg100":
+                    base["handle"]["params"]["state_unit"] = self.sg100_state_unit
                 obs_map["gripper"] = base
                 continue
             if key == "eef_pose" and len(info) >= 3 and info[0] == "computed":
@@ -295,6 +303,9 @@ class ConfigInference:
     epoch: int = 1
     max_episode_steps: int = 1000
     task_prompt: str = ""
+    task3_binary: bool = False
+    task3_poses_path: str = ""
+    task3_stats_path: str = ""
 
     async_inference: bool = False
     async_control_hz: float = 0.0

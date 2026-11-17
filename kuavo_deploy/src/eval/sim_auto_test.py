@@ -69,6 +69,24 @@ from kuavo_deploy.kuavo_env.KuavoSimEnv import KuavoSimEnv
 from kuavo_deploy.kuavo_env.KuavoRealEnv import KuavoRealEnv
 from kuavo_deploy.utils.ros_manager import ROSManager
 
+def _load_task3_binary_adapter(config):
+    cfg = config.inference
+    if not bool(getattr(cfg, "task3_binary", False)):
+        return None
+    poses_path = str(getattr(cfg, "task3_poses_path", "") or "")
+    stats_path = str(getattr(cfg, "task3_stats_path", "") or "")
+    if not poses_path:
+        raise ValueError("inference.task3_poses_path is required when task3_binary=true")
+    adapter_path = Path(__file__).resolve().parents[3] / "task3_binary" / "action_adapter.py"
+    if not adapter_path.is_file():
+        raise FileNotFoundError(f"Task3 adapter not found: {adapter_path}")
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("task3_action_adapter", adapter_path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module.ActionAdapter(poses_path, stats_path or None)
+
 
 init_evt = threading.Event()
 pause_flag = threading.Event()
@@ -199,6 +217,18 @@ def run_single_episode(config, policy, preprocessor, postprocessor, episode, out
         log_model.info(f"policy.config.output_features: {policy.config.output_features}")
         log_robot.info(f"env.action_space: {env.action_space}")
 
+    task3_adapter = _load_task3_binary_adapter(config)
+    if task3_adapter is not None:
+        if cfg.policy_type == "client":
+            raise ValueError("Task3 binary adapter currently requires a local ACT policy")
+        if tuple(policy.config.output_features["action"].shape) != (11,):
+            raise ValueError("Task3 binary adapter requires 11D model actions")
+        if config.env.is_binary_sg100_action:
+            raise ValueError("Task3 poses must not be thresholded again by the environment")
+        if config.env.sg100_joint_action_unit != "rad":
+            raise ValueError("Task3 poses require env.sg100_joint_action_unit=rad")
+        if config.env.sg100_state_unit != "rad":
+            raise ValueError("Task3 training data requires SG100 state in physical rad")
     # Reset the policy and environments to prepare for rollout
     policy.reset()
     observation, info = env.reset(seed=seed)
@@ -217,11 +247,13 @@ def run_single_episode(config, policy, preprocessor, postprocessor, episode, out
     rewards = []
     cam_keys = [k for k in observation.keys() if "images" in k or "depth" in k]
 
+    capture_frames = os.environ.get("ROUND3_SKIP_FRAME_CAPTURE") != "1"
     frame_temp_dirs = {}
-    for k in cam_keys:
-        temp_dir = output_directory / f"temp_frames_{episode}_{k}"
-        temp_dir.mkdir(parents=True, exist_ok=True)
-        frame_temp_dirs[k] = temp_dir
+    if capture_frames:
+        for k in cam_keys:
+            temp_dir = output_directory / f"temp_frames_{episode}_{k}"
+            temp_dir.mkdir(parents=True, exist_ok=True)
+            frame_temp_dirs[k] = temp_dir
 
 
     average_exec_time = 0
@@ -244,12 +276,15 @@ def run_single_episode(config, policy, preprocessor, postprocessor, episode, out
             action = policy.select_action(observation)
         log_model.info(f"Step {step}: predict action {action}")
         action = postprocessor(action)
+        if task3_adapter is not None:
+            # Physical units already restored by postprocessor.
+            action = task3_adapter.restore_tensor(action) if isinstance(action, torch.Tensor) else task3_adapter.restore(action)
         # print(f"action: {action}, action.shape: {action.shape}, action min: {action.min()}, action max: {action.max()}")
         action_infer_time = time.time()
         log_model.info(f"episode {episode}, step {step}, action infer time: {action_infer_time - start_time:.3f}s")
         average_action_infer_time += action_infer_time - start_time
 
-        numpy_action = action.squeeze(0).cpu().numpy()
+        numpy_action = action.detach().squeeze(0).cpu().numpy() if isinstance(action, torch.Tensor) else np.asarray(action).squeeze(0)
 
         log_model.info(f"Step {step}: Executing action {numpy_action}")
         observation, reward, terminated, truncated, info = env.step(numpy_action)
@@ -262,12 +297,13 @@ def run_single_episode(config, policy, preprocessor, postprocessor, episode, out
         
         rewards.append(reward)
 
-        for k in cam_keys:
-            frame_path = frame_temp_dirs[k] / f"frame_{step:04d}.png"
-            img = (observation[k].squeeze(0).cpu().numpy().transpose(1, 2, 0) * 255).astype(np.uint8)
-            if img.shape[-1] == 1:
-                img = img.squeeze(-1)
-            imageio.imwrite(str(frame_path), img)
+        if capture_frames:
+            for k in cam_keys:
+                frame_path = frame_temp_dirs[k] / f"frame_{step:04d}.png"
+                img = (observation[k].squeeze(0).cpu().numpy().transpose(1, 2, 0) * 255).astype(np.uint8)
+                if img.shape[-1] == 1:
+                    img = img.squeeze(-1)
+                imageio.imwrite(str(frame_path), img)
 
         # The rollout is considered done when the success state is reached (i.e. terminated is True),
         # or the maximum number of iterations is reached (i.e. truncated is True)
@@ -287,7 +323,7 @@ def run_single_episode(config, policy, preprocessor, postprocessor, episode, out
     log_model.info(f"average step time: {average_step_time / step:.3f}s")
     log_model.info(f"average sleep time: {env.unwrapped.average_sleep_time / step:.3f}s")
     
-    for cam in cam_keys:
+    for cam in frame_temp_dirs:
         temp_dir = frame_temp_dirs[cam]
         frame_files = sorted(temp_dir.glob("frame_*.png"))
         frames = [imageio.imread(str(f)) for f in frame_files]
