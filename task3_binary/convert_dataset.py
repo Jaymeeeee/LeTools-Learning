@@ -7,7 +7,7 @@ p.add_argument('--out',type=pathlib.Path,required=True)
 a=p.parse_args()
 ref=pathlib.Path(__file__).resolve().parent;source=a.source.resolve();out=a.out.resolve()
 assert not out.exists(),'Do not overwrite an existing dataset'
-spec=json.loads((ref/'poses.json').read_text());saved=json.loads((ref/'stats.json').read_text());cfg=json.loads((b/'migration_20261111/binary_short_train_config_reference.json').read_text());train=cfg['dataset']['episodes'];assert len(train)==160
+spec=json.loads((ref/'poses.json').read_text());saved=json.loads((ref/'stats.json').read_text());cfg=json.loads((ref/'train_config.json').read_text());train=cfg['dataset']['episodes'];assert len(train)==160
 df=pq.read_table(source/'data/chunk-000/file-000.parquet').to_pandas();episodes=pq.read_table(source/'meta/episodes/chunk-000/file-000.parquet').to_pylist();frames=[];rows=[];mapping=[];offset=0;train_action=[];train_state=[]
 for ep in episodes:
  eid=ep['episode_index'];g=df[df.episode_index==eid].copy();actions=np.stack(g.action);valid=np.flatnonzero(actions[:,spec['signal_action_index']]>=spec['label_rule']['drop_leading_frames_while_signal_below']);assert len(valid)>0
@@ -41,7 +41,7 @@ info=json.loads((source/'meta/info.json').read_text());info['total_frames']=offs
 selection={'train_episodes':train,'train_frames':57212,'validation_episodes':None,'original_validation_frames_reported':14301,'held_out_pool_episodes':sorted(set(range(500))-set(train)),'validation_status':'Original 40-episode list not recovered. Remaining 340 episodes are a held-out candidate pool, not the original validation split.'}
 (out/'selection_recovered.json').write_text(json.dumps(selection,indent=2))
 report={'source_commit':'490bba041cfac362a74ef06febbc5e78d126c9bd','total_episodes':500,'total_retained_frames':offset,'training_episodes':160,'training_frames':57212,'frozen_statistics_comparison':comparisons,'statistics':'Copied preserved training-only statistics after independently checking state/action against reconstructed training frames; image statistics preserved from original artifact','episode_image_statistics':'Removed old per-episode statistics because initialization frames were trimmed; training normalization uses preserved global training-only stats','short_checkpoint':'not recovered and not needed for fresh training','original_validation_list':'not recovered','training_started':False}
-(out/'RECONSTRUCTION.json').write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2))
+(out/'RECONSTRUCTION.json').write_text(json.dumps(report,indent=2))
 
 # Original validation40 was subsequently recovered and verified.
 selected=json.loads((ref/'selection.json').read_text(encoding='utf-8-sig'))
@@ -51,3 +51,5 @@ assert sum(r['retained_frames'] for r in mapping if r['episode_index'] in val)==
 (out/'selection_recovered.json').write_text(json.dumps(selected,indent=2))
 report.update(original_validation_list='recovered and verified',validation_episodes=40,validation_frames=14301,selected_frames=71513)
 (out/'RECONSTRUCTION.json').write_text(json.dumps(report,indent=2))
+
+print(json.dumps(report,indent=2))
