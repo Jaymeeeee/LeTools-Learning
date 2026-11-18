@@ -1,21 +1,21 @@
 # LeRobot Diffusion Policy 简化配置。
 dataset:
-  repo_id: "lerobot/your_dataset"  # 数据集名字，用来做标识。 
-  root: null  # 数据地址
+  repo_id: "dataset-task2-filtered200-binary-scalar"  # 数据集名字，用来做标识。 
+  root: /root/gpufree-data/openlet/dataset-task2-filtered200-binary-scalar  # 数据地址
 
 training:
-  resume: false  # 是否从 output_dir 最新 checkpoint 继续训；续训改为 true，并修改 output_dir 为上阶段 run 的产物路径，如 outputs/train/diffusion_YYYYMMDD_HHMMSS。
-  output_dir: "outputs/train/diffusion"  #  权重存储路径
-  job_name: "diffusion"  # 实验名。
+  resume: true  # 是否从 output_dir 最新 checkpoint 继续训；续训改为 true，并修改 output_dir 为上阶段 run 的产物路径，如 outputs/train/diffusion_YYYYMMDD_HHMMSS。
+  output_dir: "outputs/train/diffusion-binary_20261114_214004"  #  权重存储路径
+  job_name: "diffusion-binary-filtered-200"  # 实验名。
   batch_size: 16 
-  steps: 100000  # 总训练步数
+  steps:  445100  # 总训练步数
   save_freq: 20000  # 每N步保存一次权重
-  num_workers: 4  
+  num_workers: 8  
   seed: 1000  
 
 wandb:  # wandb的一些设置
-  enable: false  # 是否启用 wandb。
-  project: "lerobot_diffusion"  # wandb 项目名。
+  enable: true  # 是否启用 wandb。
+  project: "diffusion-binary-filtered-200"  # wandb 项目名。
 
 policy:  
   type: "diffusion"  
