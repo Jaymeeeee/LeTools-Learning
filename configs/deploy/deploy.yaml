@@ -1,25 +1,48 @@
 env:  # 推理环境设置
-  inference_env: real  # 选仿真还是真机 option: sim/real
+  inference_env: sim  # 选仿真还是真机 option: sim/real
   platform_type: "5w"  # 机器人型号 option: "4pro"/"5"/"5w"
   5w_wholebody: false  # 仅5w生效；在 observation.state/action 末尾追加并控制4维下半身
-  5w_base_move: false  # 仅5w生效；从 action 末尾读取 [vx, vy, vyaw] 并发布 /cmd_vel
+  5w_base_move: true  # 仅5w生效；从 action 末尾读取 [vx, vy, vyaw] 并发布 /cmd_vel
   5w_lowerlock: [0, 0, 0, 0]  # 全身模式下按 /lb_leg_traj index 锁定；1 会锁定对应关节并使用 go_bag_path 首帧值，0 正常运动。仅动最后一个设为 [1,1,1,0]；
-  which_arm: both  # 控制左手、右手还是双手 option: both/left/right
-  eef_type: qiangnao  # 夹爪或手型类型  option: leju_claw/qiangnao/sg100/rq2f85(仿真)
+  which_arm: right  # 控制左手、右手还是双手 option: both/left/right
+  eef_type: sg100  # 夹爪或手型类型  option: leju_claw/qiangnao/sg100/rq2f85(仿真)
+
+  sg100_dof_needed: 1 
+  sg100_dof_offset: 0  # sg100 夹爪的自由度偏移量，0表示使用夹爪的第一个自由度，1表示使用第二个自由度
+  is_binary: true
+  is_binary_sg100_action: true
+  sg100_action_threshold: 0.5  # sg100 二值化动作阈值
+
+  sg100_open_pose: [
+    1.0, -1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 0.0, 3.0, 1.0, 0.0,
+    1.0, -1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 0.0, 3.0, 1.0, 0.0
+  ]
+  sg100_close_pose: [
+    2.1, -1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 3.0, 1.0, 0.0,
+    2.1, -1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 3.0, 1.0, 0.0
+  ]
+  sg100_init_pose: [
+    1.0, -1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 0.0, 3.0, 1.0, 0.0,
+    1.0, -1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 0.0, 3.0, 1.0, 0.0
+  ]
+
+  sg100_force_threshold: 1.0
+
   ros_rate: 10  # 推理频率
   direct_to_wbc: false  # 是否使用direct to wbc模式。
   enable_action_interpolation: true
+  head_init: null
   control_rate: 100  # WBC插值后的实际控制指令频率
-  image_size: [848, 480]  # 相机缩放尺寸 option: [640, 480](仿真)/[848, 480](真机）
-  camera_encoding: h265  # 相机编码格式: "jpeg" 或 "h265"。h265 时自动订阅 H265 stream topic 并进行实时解码。
+  image_size: [640, 480]  # 相机缩放尺寸 option: [640, 480](仿真)/[848, 480](真机）
+  camera_encoding: jpeg  # 相机编码格式: "jpeg" 或 "h265"。h265 时自动订阅 H265 stream topic 并进行实时解码。
   
 
 inference:  # 推理和评测设置
   go_bag_path: null    # bag 回放路径
-  policy_type: client  # 要加载的模型类型,外挂模式选择client, 选择client模式后下面的pretrained_path失去作用
-  pretrained_path: /path/to/checkpoint  # 要加载的权重路径。
+  policy_type: diffusion  # 要加载的模型类型,外挂模式选择client, 选择client模式后下面的pretrained_path失去作用
+  pretrained_path: /home/robot/kuavo-workspace/LeTools-Learning/outputs/eval/diffusion-binary_20261114_214004/checkpoints/last/pretrained_model  # 要加载的权重路径。
   eval_episodes: 10  # 评测跑多少条
-  max_episode_steps: 200  # 每条最多跑多少步
+  max_episode_steps: 600  # 每条最多跑多少步
   task_prompt: "Pick and Place"
 
   async_inference: false
