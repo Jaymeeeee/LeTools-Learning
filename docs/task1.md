@@ -12,7 +12,7 @@
 在已配置依赖的 Python 环境中执行。数据路径指向已整理好的 LeRobot v3 数据集，使用训练时像素无损优化后的版本可复现解码性能。两个配置都保留批大小 24、学习率 1e-5、在线颜色增强和长度为 100 的动作块。训练版本使用仓库锁定的 LeRobot 子模块。
 
 ```bash
-git clone -b codex/task1 https://github.com/Jaymeeeee/LeTools-Learning.git
+git clone -b task1 https://github.com/Jaymeeeee/LeTools-Learning.git
 cd LeTools-Learning
 git submodule update --init third_party/lerobot
 
