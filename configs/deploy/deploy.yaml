@@ -4,7 +4,7 @@ env:  # 推理环境设置
   5w_wholebody: false  # 仅5w生效；在 observation.state/action 末尾追加并控制4维下半身
   5w_base_move: true  # 仅5w生效；从 action 末尾读取 [vx, vy, vyaw] 并发布 /cmd_vel
   5w_lowerlock: [0, 0, 0, 0]  # 全身模式下按 /lb_leg_traj index 锁定；1 会锁定对应关节并使用 go_bag_path 首帧值，0 正常运动。仅动最后一个设为 [1,1,1,0]；
-  which_arm: right  # 控制左手、右手还是双手 option: both/left/right
+  which_arm: both  # 控制左手、右手还是双手 option: both/left/right
   eef_type: sg100  # 夹爪或手型类型  option: leju_claw/qiangnao/sg100/rq2f85(仿真)
 
   sg100_dof_needed: 1 
@@ -39,8 +39,8 @@ env:  # 推理环境设置
 
 inference:  # 推理和评测设置
   go_bag_path: null    # bag 回放路径
-  policy_type: diffusion  # 要加载的模型类型,外挂模式选择client, 选择client模式后下面的pretrained_path失去作用
-  pretrained_path: /home/robot/kuavo-workspace/LeTools-Learning/outputs/eval/diffusion-binary_20261114_214004/checkpoints/last/pretrained_model  # 要加载的权重路径。
+  policy_type: act  # 要加载的模型类型,外挂模式选择client, 选择client模式后下面的pretrained_path失去作用
+  pretrained_path: /home/robot/kuavo-workspace/LeTools-Learning/outputs/train/act-binary_20261112_203729/pretrained_model  # 要加载的权重路径。
   eval_episodes: 10  # 评测跑多少条
   max_episode_steps: 600  # 每条最多跑多少步
   task_prompt: "Pick and Place"
