@@ -1,0 +1,25 @@
+env:
+  inference_env: sim
+  platform_type: 5w
+  5w_wholebody: false
+  5w_base_move: false
+  which_arm: right
+  eef_type: sg100
+  sg100_dof_needed: 11
+  sg100_dof_offset: 0
+  is_binary_sg100_action: false
+  ros_rate: 10
+  control_rate: 100
+  direct_to_wbc: false
+  enable_action_interpolation: true
+  image_size: [640, 480]
+  camera_encoding: jpeg
+  head_init: [0.0, 0.209]
+inference:
+  policy_type: act
+  eval_episodes: 1
+  max_episode_steps: 470
+  seed: 1000
+  device: cuda
+  task_prompt: Pick and Place
+  async_inference: false

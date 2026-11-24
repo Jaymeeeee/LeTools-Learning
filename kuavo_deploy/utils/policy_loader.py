@@ -6,6 +6,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+import packaging.version  # LeRobot's checkpoint loader accesses this submodule.
 import torch
 
 from lerobot.configs import PreTrainedConfig

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import rospy
 import numpy as np
-from cv_bridge import CvBridge
 from sensor_msgs.msg import CompressedImage, JointState
 from geometry_msgs.msg import Twist
 import cv2
@@ -63,7 +62,6 @@ class KuavoBaseRosEnv(gym.Env):
         self.control_signal_manager = ControlSignalManager()
         
         # 初始化其他组件
-        self.bridge = CvBridge()
         self._set_observation_space()
         self._set_action_space()
         if self.dagger_on:

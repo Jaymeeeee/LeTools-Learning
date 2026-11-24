@@ -1,0 +1,5 @@
+{
+  "n_action_steps": 100,
+  "temporal_ensemble_coeff": null,
+  "action_hz": 10
+}
