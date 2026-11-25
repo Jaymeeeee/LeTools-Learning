@@ -9,8 +9,8 @@ import gymnasium as gym
 import time
 import sys
 from kuavo_humanoid_sdk import KuavoSDK, KuavoRobot, KuavoRobotState, DexterousHand
-from kuavo_humanoid_sdk.msg.kuavo_msgs.msg import lejuClawCommand
-from kuavo_humanoid_sdk.msg.kuavo_msgs.srv import (changeArmCtrlMode, changeArmCtrlModeRequest)
+from kuavo_msgs.msg import lejuClawCommand
+from kuavo_msgs.srv import changeArmCtrlMode, changeArmCtrlModeRequest
 from kuavo_deploy.utils.logging_utils import setup_logger
 from kuavo_deploy.config import KuavoConfig
 from kuavo_deploy.utils.ros_manager import ROSManager
@@ -719,8 +719,14 @@ class KuavoBaseRosEnv(gym.Env):
             else:
                 self.arm_state[f"{k}"] = v
 
-        if self.is_binary:
-            self.arm_state['gripper'] = np.where(self.arm_state['gripper']>0.5, 1, 0)
+# ------------------------------ 这里修改手部二值化阈值 --------------------------------- #
+        if self.is_binary: 
+            threshold = 1.55 / 1.57 if self.eef_type == "sg100" else 0.5 # 采用1.55作为手部关节阈值，与训练数据的二值化处理阈值保持一致
+            self.arm_state["gripper"] = (
+                np.asarray(self.arm_state["gripper"], dtype=np.float32)
+                > np.float32(threshold)
+            ).astype(np.float32)
+# ------------------------------------------------------------------------------------- #
 
         assert len(self.arm_state.keys()) >= 2, f"arm_state must have exactly 2 elements, but got {len(self.arm_state.keys())}"
 

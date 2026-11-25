@@ -11,7 +11,7 @@ import sys
 from kuavo_deploy.config import KuavoConfig
 from sensor_msgs.msg import CompressedImage, JointState
 from torchvision.transforms.functional import to_tensor
-from kuavo_humanoid_sdk.msg.kuavo_msgs.msg import sensorsData,lejuClawState
+from kuavo_msgs.msg import sensorsData, lejuClawState
 from kuavo_deploy.utils.signal_controller import ControlSignalManager
 from kuavo_deploy.utils.logging_utils import setup_logger
 from kuavo_deploy.utils.ros_manager import ROSManager
